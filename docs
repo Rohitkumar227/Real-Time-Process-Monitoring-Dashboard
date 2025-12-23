@@ -1,0 +1,6 @@
+This project uses the Linux /proc file system to extract
+real-time information about system processes.
+
+The dashboard continuously refreshes every second and
+helps administrators analyze system performance and
+identify problematic processes.
