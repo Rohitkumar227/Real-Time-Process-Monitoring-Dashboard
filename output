@@ -1,0 +1,12 @@
+REAL-TIME PROCESS MONITORING DASHBOARD
+
+CPU Usage        : 23 %
+Memory Usage     : 3120 MB / 8192 MB
+Total Processes  : 146
+
+PID    PPID   PROCESS_NAME     STATE   CPU_TIME   MEM(KB)
+----------------------------------------------------------
+1      0      systemd          S       1532       8420
+742    1      bash             S       210        3560
+1023   742    monitor          R       98         2210
+...
