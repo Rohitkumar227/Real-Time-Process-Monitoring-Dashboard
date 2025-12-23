@@ -33,4 +33,3 @@ The dashboard updates automatically every second.
 
 ---
 
-## 📁 Folder Structure
