@@ -1,14 +1,36 @@
 # Real-Time Process Monitoring Dashboard
 
-This project implements a real-time process monitoring dashboard using C on Linux.
+## 📌 Project Description
+This project implements a Real-Time Process Monitoring Dashboard using C on Linux.
+It displays live system information such as CPU usage, memory usage, total active
+processes, and detailed process information including PID, PPID, process state,
+CPU time, and memory consumption.
 
-## Features
-- CPU usage
-- Memory usage
-- Total process count
-- PID, PPID, State, CPU time, Memory
-- Updates every second
+The dashboard updates automatically every second.
 
-## Compile & Run
-gcc src/process_monitor.c -o monitor
-./monitor
+---
+
+## 🔧 Features
+- Real-time CPU usage monitoring
+- Real-time memory usage monitoring
+- Total number of running processes
+- Process details:
+  - PID
+  - PPID
+  - Process Name
+  - State
+  - CPU Time
+  - Memory Usage
+- Auto-refresh every second
+
+---
+
+## 🛠 Technologies Used
+- Programming Language: C
+- Operating System: Linux (Ubuntu)
+- OS Interface: /proc file system
+- Compiler: GCC
+
+---
+
+## 📁 Folder Structure
