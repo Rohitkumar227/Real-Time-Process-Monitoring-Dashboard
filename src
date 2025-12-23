@@ -1,0 +1,154 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+#include <ctype.h>
+
+/* ---------- SCREEN CLEAR ---------- */
+void clear_screen() {
+    printf("\033[2J\033[H");
+}
+
+/* ---------- CHECK NUMERIC ---------- */
+int is_number(const char *str) {
+    for (int i = 0; str[i]; i++) {
+        if (!isdigit(str[i]))
+            return 0;
+    }
+    return 1;
+}
+
+/* ---------- CPU USAGE ---------- */
+long get_cpu_usage() {
+    static long prev_idle = 0, prev_total = 0;
+    FILE *fp = fopen("/proc/stat", "r");
+    if (!fp) return 0;
+
+    long user, nice, system, idle;
+    fscanf(fp, "cpu %ld %ld %ld %ld", &user, &nice, &system, &idle);
+    fclose(fp);
+
+    long total = user + nice + system + idle;
+    long total_diff = total - prev_total;
+    long idle_diff = idle - prev_idle;
+
+    prev_total = total;
+    prev_idle = idle;
+
+    if (total_diff == 0) return 0;
+    return (100 * (total_diff - idle_diff)) / total_diff;
+}
+
+/* ---------- MEMORY USAGE ---------- */
+void get_memory_usage(long *used, long *total) {
+    FILE *fp = fopen("/proc/meminfo", "r");
+    if (!fp) return;
+
+    long mem_total, mem_free;
+    fscanf(fp, "MemTotal: %ld kB\n", &mem_total);
+    fscanf(fp, "MemFree: %ld kB\n", &mem_free);
+    fclose(fp);
+
+    *total = mem_total / 1024;
+    *used = (mem_total - mem_free) / 1024;
+}
+
+/* ---------- PROCESS COUNT ---------- */
+int get_process_count() {
+    DIR *dir = opendir("/proc");
+    if (!dir) return 0;
+
+    struct dirent *entry;
+    int count = 0;
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (is_number(entry->d_name))
+            count++;
+    }
+    closedir(dir);
+    return count;
+}
+
+/* ---------- PROCESS DETAILS TABLE ---------- */
+void display_process_table(int limit) {
+    DIR *dir = opendir("/proc");
+    if (!dir) return;
+
+    struct dirent *entry;
+    int shown = 0;
+
+    printf("\n%-6s %-6s %-18s %-6s %-12s %-10s\n",
+           "PID", "PPID", "PROCESS_NAME", "STATE", "CPU_TIME", "MEM(KB)");
+    printf("---------------------------------------------------------------------\n");
+
+    while ((entry = readdir(dir)) != NULL && shown < limit) {
+
+        if (!is_number(entry->d_name))
+            continue;
+
+        char path[256];
+        int pid, ppid;
+        char name[64], state;
+        long utime, stime, mem = 0;
+
+        snprintf(path, sizeof(path), "/proc/%s/stat", entry->d_name);
+        FILE *fp = fopen(path, "r");
+        if (!fp) continue;
+
+        fscanf(fp,
+               "%d %s %c %d %*d %*d %*d %*d %*u %*u %*u %*u %*u %ld %ld",
+               &pid, name, &state, &ppid, &utime, &stime);
+        fclose(fp);
+
+        snprintf(path, sizeof(path), "/proc/%s/status", entry->d_name);
+        fp = fopen(path, "r");
+        if (fp) {
+            char line[256];
+            while (fgets(line, sizeof(line), fp)) {
+                if (strncmp(line, "VmRSS:", 6) == 0) {
+                    sscanf(line, "VmRSS: %ld kB", &mem);
+                    break;
+                }
+            }
+            fclose(fp);
+        }
+
+        printf("%-6d %-6d %-18s %-6c %-12ld %-10ld\n",
+               pid, ppid, name, state, (utime + stime), mem);
+
+        shown++;
+    }
+
+    closedir(dir);
+}
+
+/* ---------- MAIN ---------- */
+int main() {
+
+    while (1) {
+        clear_screen();
+
+        long cpu = get_cpu_usage();
+        long mem_used, mem_total;
+        int process_count = get_process_count();
+
+        get_memory_usage(&mem_used, &mem_total);
+
+        printf("=====================================================================\n");
+        printf("              REAL-TIME PROCESS MONITORING DASHBOARD\n");
+        printf("=====================================================================\n\n");
+
+        printf("CPU Usage           : %ld %%\n", cpu);
+        printf("Memory Usage        : %ld MB / %ld MB\n", mem_used, mem_total);
+        printf("Total Processes     : %d\n", process_count);
+
+        display_process_table(10);   // ✅ AT LEAST 10 PROCESSES
+
+        printf("\nDashboard refreshes every 1 second | CTRL + C to exit\n");
+
+        sleep(1);
+    }
+
+    return 0;
+}
