@@ -1,0 +1,27 @@
+
+---
+
+# 📄 **2️⃣ src/process_monitor.c**
+
+➡️ Paste **the final C code** you already have  
+(the one with table header + 10 processes + real-time update)
+
+📌 File name **must match README**
+
+---
+
+# 📄 **3️⃣ flowchart/flowchart.mmd (Mermaid Code)**
+
+```mermaid
+flowchart TD
+A[Start Program] --> B[Initialize Variables]
+B --> C[Read CPU Data from /proc/stat]
+C --> D[Calculate CPU Usage]
+D --> E[Read Memory Data from /proc/meminfo]
+E --> F[Calculate Memory Usage]
+F --> G[Scan /proc Directory]
+G --> H[Count Active Processes]
+H --> I[Read Process Details]
+I --> J[Display Data in Table]
+J --> K[Wait 1 Second]
+K --> C
